@@ -1,0 +1,22 @@
+# Local environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Go build outputs and caches
+*.exe
+*.test
+*.out
+cmd.exe
+bin/
+.gocache/
+coverage.out
+
+# Logs
+*.log
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
