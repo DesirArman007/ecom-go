@@ -1,6 +1,6 @@
 services:
   backend:
-    build: .
+    image: ${DOCKERHUB_USERNAME}/ecom-backend:latest
     container_name: ecom-backend
     ports:
       - "8000:8080"

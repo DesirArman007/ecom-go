@@ -1,4 +1,4 @@
-name: CI
+name: CI-CD
 
 on:
     push:
@@ -20,5 +20,46 @@ jobs:
             - name: Run tests
               run: go test ./...
                 
-            - name: Buid Docker image
-              run: docker build -t ecom-backend .
+    push-image:
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        needs: test-and-build
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: docker/login-action@v3
+              with:
+                username: ${{ secrets.DOCKERHUB_USERNAME}}
+                password: ${{ secrets.DOCKERHUB_TOKEN}}
+            - uses: docker/build-push-action@v6
+              with:
+                context: .
+                push: true
+                tags: ${{ secrets.DOCKERHUB_USERNAME}}/ecom-backend:latest
+    
+    deploy:
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        needs: push-image
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Copy compose file to VM
+              uses: appleboy/scp-action@v1
+              with:
+                host: ${{ secrets.VM_HOST}}
+                username: ${{ secrets.VM_USER }}
+                key: ${{ secrets.VM_SSH_KEY }}
+                source: docker-compose.yml
+                target: ~/ecom
+
+            - name: Deploy on VM
+              uses: appleboy/ssh-action@v1
+              with:
+                host: ${{ secrets.VM_HOST }}
+                username: ${{ secrets.VM_USER }}
+                key: ${{ secrets.VM_SSH_KEY }}
+                envs: DOCKERHUB_USERNAME,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB
+                script: |
+                    cd ~/ecom
+                    docker compose pull backend
+                    docker compose up -d --no-build --pull always
+                    curl --fail --retry 10 --retry-delay 2 http://localhost:8000/health
