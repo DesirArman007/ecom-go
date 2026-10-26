@@ -30,10 +30,6 @@ jobs:
               with:
                 username: ${{ secrets.DOCKERHUB_USERNAME}}
                 password: ${{ secrets.DOCKERHUB_TOKEN}}
-            - name: Check secrets exist
-              run: |
-                [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ] && echo "username: set" || echo "username: EMPTY"
-                [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ] && echo "token: set" || echo "token: EMPTY"
             - uses: docker/build-push-action@v6
               with:
                 context: .
