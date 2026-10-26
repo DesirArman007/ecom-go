@@ -21,4 +21,4 @@ jobs:
               run: go test ./...
                 
             - name: Buid Docker image
-              run: docker built -t ecom-backend .
+              run: docker build -t ecom-backend .
