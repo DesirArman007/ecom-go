@@ -2,6 +2,8 @@ FROM golang:1.25.4-alpine
 
 RUN go install github.com/pressly/goose/v3/cmd/goose@v3.27.0
 
+ENV PATH="/go/bin:${PATH}"
+
 WORKDIR /app
 
 COPY internal/adapters/postgresql/migrations /migrations
