@@ -34,7 +34,7 @@ services:
     environment:
       GOOSE_DRIVER: postgres
       GOOSE_DBSTRING: "user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} host=postgres dbname=${POSTGRES_DB} sslmode=disable"
-    command: ["goose", "-dir", "/migrations", "up"]
+    command: ["up"]
     depends_on:
       postgres:
         condition: service_healthy
