@@ -40,7 +40,8 @@ jobs:
             - name: Build and push migrations image
               uses: docker/build-push-action@v6
               with:
-                context: Dockerfile.migrations
+                context: .
+                file: Dockerfile.migrations
                 push: true
                 tags: ${{ secrets.DOCKERHUB_USERNAME}}/ecom-migrations:latest
 
