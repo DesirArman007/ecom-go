@@ -30,12 +30,20 @@ jobs:
               with:
                 username: ${{ secrets.DOCKERHUB_USERNAME}}
                 password: ${{ secrets.DOCKERHUB_TOKEN}}
-            - uses: docker/build-push-action@v6
+            - name: Build and push backend image
+              uses: docker/build-push-action@v6
               with:
                 context: .
                 push: true
                 tags: ${{ secrets.DOCKERHUB_USERNAME}}/ecom-backend:latest
-    
+
+            - name: Build and push migrations image
+              uses: docker/build-push-action@v6
+              with:
+                context: Dockerfile.migrations
+                push: true
+                tags: ${{ secrets.DOCKERHUB_USERNAME}}/ecom-migrations:latest
+
     deploy:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         needs: push-image
@@ -65,6 +73,7 @@ jobs:
                 envs: DOCKERHUB_USERNAME,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB
                 script: |
                     cd ~/ecom
-                    docker compose pull backend
+                    docker compose pull backend migrate
                     docker compose up -d --no-build --pull always
                     curl --fail --retry 10 --retry-delay 2 http://localhost:8000/health
+                

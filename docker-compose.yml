@@ -1,4 +1,6 @@
 services:
+
+
   backend:
     image: ${DOCKERHUB_USERNAME}/ecom-backend:latest
     container_name: ecom-backend
@@ -9,6 +11,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   postgres:
     image: postgres:16-alpine
@@ -24,6 +28,17 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  migrate:
+    image: ${DOCKERHUB_USERNAME}/ecom-migrations:latest
+    container_name: ecom-migrate
+    environment:
+      GOOSE_DRIVER: postgres
+      GOOSE_DBSTRING: "user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} host=postgres dbname=${POSTGRES_DB} sslmode=disable"
+    command: ["goose", "-dir", "/migrations", "up"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
 
 volumes:
   postgres_data:
