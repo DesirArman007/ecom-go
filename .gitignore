@@ -15,6 +15,22 @@ coverage.out
 # Logs
 *.log
 
+# Terraform local data and generated files
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.plan
+tfplan*
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
 # Editor and operating-system files
 .vscode/
 .idea/
