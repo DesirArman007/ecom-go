@@ -138,10 +138,18 @@ jobs:
 
             kubectl apply -n ecom -f k8s/aks/migration-job.yaml
 
-            kubectl wait \
+            if ! kubectl wait \
               --for=condition=complete job/ecom-migrations \
               -n ecom \
-              --timeout=120s
+              --timeout=180s; then
+
+              kubectl describe job ecom-migrations -n ecom
+              kubectl logs job/ecom-migrations \
+                -n ecom \
+                --all-containers=true || true
+
+              exit 1
+            fi
         
         - name: Deploy backend
           run: |
