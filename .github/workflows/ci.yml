@@ -102,12 +102,12 @@ jobs:
           uses: azure/aks-set-context@v5
           with:
             resource-group: ecom-tf-rg
-            cluser-name: ecom-aks
+            cluster-name: ecom-aks
             admin: true
 
         - name: Create namespace
           run: |
-            kubectl apply -f k8s/aks/backend-namespace.yaml
+            kubectl apply -f k8s/aks/namespace.yaml
         
         - name: Create Postgres secret
           env:
@@ -146,7 +146,7 @@ jobs:
               -n ecom \
               --ignore-not-found=true
 
-            kubectl apply -n ecom -f k8s/aks/migrations.yaml
+            kubectl apply -n ecom -f k8s/aks/migration-job.yaml
 
             kubectl wait \
               --for=condition=complete job/ecom-migrations \
@@ -154,7 +154,7 @@ jobs:
               --timeout=120s
         
         - name: Deploy backend
-          run: \
+          run: |
             kubectl apply -n ecom -f k8s/aks/backend.yaml
             kubectl apply -n ecom -f k8s/aks/backend-ingress.yaml
             kubectl rollout restart deployment backend-service -n ecom
@@ -162,8 +162,9 @@ jobs:
 
         - name: Health check
           run: |
-            INGRESS_IP=${kubectl get service nginx -n app-routing-system\
+            INGRESS_IP=${kubectl get service nginx \
+              -n app-routing-system \
               -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
-            curl --fail --retry 10 --retry-deplay 5 \
+            curl --fail --retry 10 --retry-delay 5 \
               http://${INGRESS_IP}/health
