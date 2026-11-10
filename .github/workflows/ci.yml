@@ -114,22 +114,12 @@ jobs:
             POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
             POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          run: |
-            kubectl create secret generic postgres-secret \
-              --namespace ecom \
-              --from-literal=POSTGRES_USER=$POSTGRES_USER \
-              --from-literal=POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
-              --from-literal=POSTGRES_DB=$POSTGRES_DB \
-              --dry-run=client -o yaml | kubectl apply -f -
+          run: kubectl create secret generic postgres-secret --namespace ecom --from-literal=POSTGRES_USER=$POSTGRES_USER --from-literal=POSTGRES_PASSWORD=$POSTGRES_PASSWORD --from-literal=POSTGRES_DB=$POSTGRES_DB --dry-run=client -o yaml | kubectl apply -f -
 
         - name: Create backend secret
           env:
             GOOSE_DBSTRING: ${{ secrets.GOOSE_DBSTRING }}
-          run: |
-            kubectl create secret generic backend-secret \
-              --namespace ecom \
-              --from-literal=GOOSE_DBSTRING=$GOOSE_DBSTRING \
-              --dry-run=client -o yaml | kubectl apply -f -
+          run: kubectl create secret generic backend-secret --namespace ecom --from-literal="GOOSE_DBSTRING=$GOOSE_DBSTRING" --dry-run=client -o yaml | kubectl apply -f -
 
         - name: Deploy Postgres
           run: |
@@ -162,9 +152,9 @@ jobs:
 
         - name: Health check
           run: |
-            INGRESS_IP=${kubectl get service nginx \
+            INGRESS_IP=$(kubectl get service nginx \
               -n app-routing-system \
               -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
             curl --fail --retry 10 --retry-delay 5 \
-              http://${INGRESS_IP}/health
+              "http://${INGRESS_IP}/health"
