@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ecom-migrations
+spec:
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        app: ecom-migrations
+    spec:
+      restartPolicy: Never
+
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:16-alpine
+          command: 
+            - sh
+            - -c
+            - |
+              until pg_isready -h postgres-service -p 5432; do
+                echo "Waiting for PostgreSQL to be ready..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready!"
+
+      containers:
+        - name: migrations
+          image: desirarman/ecom-migrations:latest
+          args:
+            - up
+          
+          env:
+            - name: GOOSE_DRIVER
+              value: postgres
+            - name: GOOSE_DBSTRING
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: GOOSE_DBSTRING
+            
